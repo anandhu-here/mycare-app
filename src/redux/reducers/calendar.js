@@ -7,7 +7,9 @@ const initialState = {
     currentMonth:null,
     currentDayOfMonth:null,
     currentYear:null,
-    shiftsPublished: []
+    shiftsPublished: [],
+    shiftsForAssign:null,
+    can_shift : null
 }
 export const calendar = (state=initialState, action) =>{
     switch (action.type) {
@@ -17,6 +19,21 @@ export const calendar = (state=initialState, action) =>{
                 shiftsPublished:action.payload
             }
             break;
+        case "CANCELLED_SHIFT":
+            return{
+                ...state,
+                can_shift:action.payload
+            }
+        case "UNSET_SHIFT_FOR_ASSIGN":
+            return{
+                ...state,
+                shiftsForAssign:null
+            }
+        case "SET_SHIFT_FOR_ASSIGN":
+            return{
+                ...state,
+                shiftsForAssign:action.payload
+            }
         case GET_CURRENT_DATE:
 
         return {

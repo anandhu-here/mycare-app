@@ -1,6 +1,7 @@
 import React from 'react'
 import { useSelector } from 'react-redux';
 import Admin from './Admin';
+import CarerNavigator from './CarerComponent/CarerNavigation';
 import HomeNavigator from './HomeComponent/HomeNavigator';
 
 function Index() {
@@ -20,7 +21,7 @@ function Index() {
         }
         else{
             return(
-                <Home />
+                <CarerNavigator />
             )
         }
     }

@@ -3,32 +3,33 @@ import React from 'react'
 import { StatusBar, StyleSheet, View } from 'react-native'
 import CalendarTab from '../AdminTabs/CalendarTab';
 import Icon from '@expo/vector-icons/AntDesign';
-import Home from './Home';
 import Calendar from './Calendar';
 import { createStackNavigator } from '@react-navigation/stack';
-import Assign from './Assign';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import Header from '../Header';
 import DrawerContent from './DrawerContent';
+import Detail from './Detail';
+import Timesheet from './Timesheet';
+import Sign from './Sign';
 const Stack = createStackNavigator();
 const Drawer = createDrawerNavigator();
 
 const Tab = createBottomTabNavigator();
-function HomeNavigator() {
+function CarerNavigator() {
   return (
     <View style={{
         flex:1,
         
     }} >
         <Drawer.Navigator drawerContent={props=><DrawerContent {...props} />} screenOptions={{headerShown:false}} >
-          <Drawer.Screen name="Home" component={HomeStack} />
+          <Drawer.Screen name="Home" component={CarerStack} />
         </Drawer.Navigator>
     </View>
   )
 }
 
 
-const HomeStack = ({navigation}) =>{
+const CarerStack = ({navigation}) =>{
   return(
     <View style={{flex:1}} >
       <Stack.Navigator screenOptions={{
@@ -45,12 +46,14 @@ const HomeStack = ({navigation}) =>{
               )
             }
           }}name="calendar" component={Calendar} />
-          <Stack.Screen options={{
-            headerTitle:"",
-          }} name="Assign" component={Assign} />
+          <Stack.Screen name="Detail" component={Detail} />
+          <Stack.Screen name="Timesheet" component={Timesheet} />
+          
+          <Stack.Screen name="Sign" component={Sign} />
         </Stack.Navigator>
+        
     </View>
   )
 }
 
-export default HomeNavigator
+export default CarerNavigator

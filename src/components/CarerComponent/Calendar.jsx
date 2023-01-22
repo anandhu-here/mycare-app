@@ -22,23 +22,26 @@ function Calendar({navigation, route}) {
   const [ curDay, setDay ] = useState(moment().date());
   const [ homeOpen, setHO ] = useState(false);
   const [curDate, setCurDate] = useState(moment(new Date()));
-  const [ selectedDate, setSDate ] = useState({date:moment(new Date()), flag:0});
+  const [ selectedDate, setSDate ] = useState(moment(new Date()));
   const [longday, setLD] = useState(0);
   const [night, setNT] = useState(0);
   const [late, setLate] = useState(0);
   const [early, setEA] = useState(0);
-  const [nextDis, setND] = useState(false);
+  const [selShift, setSelShift] = useState(null);
   const [ shifts, setShifts ] = useState([]);
   const authContext = useSelector(state=>state.userLogin);
   const calContext = useSelector(state=>state.calendar);
   const dispatch = useDispatch();
   const [ shiftData, setSD ] = useState([]);
+  const [today, setToday] = useState(false);
 
   const fetchShifts = async(month) =>{
     try{
-      const {data} = await axios.get(`${baseUrl}/shifts/list/home?month=${month}`, {headers:{
+        const {id} = authContext.userInfo.user.carer;
+      const {data} = await axios.get(`${baseUrl}/shifts/list/carer?id=${id}`, {headers:{
         "Authorization": authContext.userInfo.token 
       }})
+      
       setShifts(data);
       return data;
     } 
@@ -60,7 +63,7 @@ function Calendar({navigation, route}) {
     if(typeof data === "object"){ 
       final.map(i=>{
         data.map(j=>{
-          if(j.day === i.day && j.month === monthObj.month() + 1){
+          if(j.shift.day === i.day && j.shift.month === monthObj.month() + 1){
             i.flag = 1,
             i.shiftData = j;
           }
@@ -154,6 +157,7 @@ function Calendar({navigation, route}) {
     })
   }
   const colors = ["white", base_color, "lightgreen"]
+
   return (
     <View style={{
       ...StyleSheet.absoluteFill,
@@ -161,155 +165,69 @@ function Calendar({navigation, route}) {
       justifyContent:"center",
       alignItems:"center"
     }} >
-
-    <Modal visible={homeOpen} >
-        <View style={{
-          ...StyleSheet.absoluteFill,
-          backgroundColor:"rgba(0,0,0,0.7)",
-          justifyContent:"center",
-          alignItems:"center"
-      }} >
-        <TouchableOpacity style={{
-              position:"absolute",
-              zIndex:1000,
-              top:'13%',
-              left:"2%",
-              elevation:16
-            }} onPress={()=>handleReset()} > 
-            <AntDesign  name="closecircle" size={40} color={base_color} />
-          </TouchableOpacity>
-          <View style={{
-              flex:0.7,
-              backgroundColor:"white",
-              width:"95%",
-              elevation:10,
-              borderRadius:30,
-              justifyContent:"center",
-              alignItems:"center"
-          }} >
-                
-            <View style={{flex:0.1, alignItems:"center", justifyContent:"center", borderBottomWidth:0.5, width:"80%"}} >
-              <Text style={{fontSize:20, fontWeight:'bold', color:"grey"}} >{selectedDate.date.format('LL')}</Text>
+        <Modal visible={today} transparent={true} >
+            <View style={{
+            ...StyleSheet.absoluteFill,
+            backgroundColor:"rgba(0,0,0,0.7)",
+            justifyContent:"center",
+            alignItems:"center"
+        }} >
+            <TouchableOpacity style={{
+                position:"absolute",
+                zIndex:1000,
+                top:'13%',
+                left:"2%",
+                elevation:16
+                }} onPress={()=>setToday(false)} > 
+                <AntDesign  name="closecircle" size={40} color={base_color} />
+            </TouchableOpacity>
+            <View style={{
+                flex:0.5,
+                width:"95%",
+                justifyContent:"center",
+                alignItems:"center",
+                backgroundColor:"white",
+                borderRadius:50
+            }} >
+                <View style={{flex:0.1, alignItems:"center", justifyContent:"center", borderBottomWidth:0.5, width:"80%"}} >
+                    <Text style={{fontSize:20, fontWeight:'bold', color:"grey"}} >{selectedDate.format('LL')}</Text>
+                </View>
+                <View style={{flex:0.6, alignItems:"center", justifyContent:"center"}} >
+                    <Text style={{fontSize:20, color:"grey",}} >{selShift?.home.company}</Text>
+                    <Text style={{fontSize:19, color:"grey",}} >{selShift?.home.adress1}</Text>
+                    <Text style={{fontSize:17, color:"grey",}} >{selShift?.home.postcode}</Text>
+                    <Text style={{fontSize:20,fontWeight:"bold", paddingVertical:"5%", color:"grey",}}>{selShift?.type.toUpperCase()}</Text>
+                </View>
+                <View style={{flex:0.2, width:"100%", alignItems:"center", justifyContent:"space-evenly", flexDirection:"row"}} >
+                    <TouchableOpacity style={{
+                        paddingHorizontal:'6%',
+                        height:"80%",
+                        backgroundColor:"brown",
+                        justifyContent:"center",
+                        alignItems:"center",
+                        borderRadius:100
+                    }} >
+                        <Text style={{color:"white"}} >CANCEL REQUEST</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={{
+                        paddingHorizontal:'6%',
+                        height:"80%",
+                        backgroundColor:base_color,
+                        justifyContent:"center",
+                        alignItems:"center",
+                        borderRadius:100
+                    }} onPress={()=>{
+                        setToday(false);
+                        var t = selShift;
+                        setSelShift(null);
+                        navigation.navigate('Timesheet', {detail:t})
+                    }} >
+                        <Text style={{color:"white"}} >FINISH</Text>
+                    </TouchableOpacity>
+                </View>
             </View>
-            <View style={{flex:0.75, width:"95%", justifyContent:"center", alignItems:"center"}} >
-              <View style={{flexDirection:"row", justifyContent:"space-around", width:"50%", alignItems:"center", marginVertical:"3%"}} >
-                <TouchableOpacity onPress={()=>{
-                  setLD(longday+1)
-                }} >
-                  <AntDesign name="pluscircle" size={32} color={base_color} />
-                </TouchableOpacity>
-                <Text>LONGDAY</Text>
-                <Text>{longday}</Text>
-                <TouchableOpacity onPress={()=>{
-                  if(longday>0){
-                    setLD(longday-1)
-                  }
-                }} >
-                  <AntDesign name="minuscircle" size={32} color={base_color} />
-                </TouchableOpacity>
-              </View>
-              <View style={{flexDirection:"row", justifyContent:"space-around", width:"50%", alignItems:"center", marginVertical:"3%"}} >
-                <TouchableOpacity onPress={()=>{
-                  setNT(night+1)
-                }} >
-                  <AntDesign name="pluscircle" size={32} color={base_color} />
-                </TouchableOpacity>
-                <Text>NIGHT</Text>
-                <Text>{night}</Text>
-                <TouchableOpacity onPress={()=>{
-                  if(night>0){
-                    setNT(night-1)
-                  }
-                }} >
-                  <AntDesign name="minuscircle" size={32} color={base_color} />
-                </TouchableOpacity>
-              </View>
-              <View style={{flexDirection:"row", justifyContent:"space-around", width:"50%", alignItems:"center", marginVertical:"3%"}} >
-                <TouchableOpacity onPress={()=>{
-                  setEA(early+1)
-                }} >
-                  <AntDesign name="pluscircle" size={32} color={base_color} />
-                </TouchableOpacity>
-                <Text>EARLY</Text>
-                <Text>{early}</Text>
-                <TouchableOpacity onPress={()=>{
-                  if(early>0){
-                    setEA(early-1)
-                  }
-                }} >
-                  <AntDesign name="minuscircle" size={32} color={base_color} />
-                </TouchableOpacity>
-              </View>
-              <View style={{flexDirection:"row", justifyContent:"space-around", width:"50%", alignItems:"center", marginVertical:"3%"}} >
-                <TouchableOpacity onPress={()=>{
-                  setLate(late+1)
-                }} >
-                  <AntDesign name="pluscircle" size={32} color={base_color} />
-                </TouchableOpacity>
-                <Text>LATE</Text>
-                <Text>{late}</Text>
-                <TouchableOpacity onPress={()=>{
-                  if(late>0){
-                    setLate(late-1)
-                  }
-                }} >
-                  <AntDesign name="pluscircle" size={32} color={base_color} />
-                </TouchableOpacity>
-              </View>
             </View>
-            <View style={{flex:0.15, width:"70%", flexDirection:"row", justifyContent:'space-around'}} > 
-                <TouchableOpacity disabled={nextDis} style={{
-                  width:'45%',
-                  height:"80%",
-                  justifyContent:"center",
-                  alignItems:"center",
-                  backgroundColor:nextDis?'grey':base_color,
-                  borderRadius:100,
-                  elevation:5
-                }} onPress={()=>{
-                  if(selectedDate.date.date() === moment().daysInMonth()){
-                    setND(true);
-                    if(longday+night+late+early>0){
-                      setSD(prev=>([
-                        {longday:longday, night:night, late:late, early:early, year:`${selectedDate.date.year()}`,day:`${selectedDate.date.date()}`,month:selectedDate.date.month()+1, state:0},
-                        ...prev
-                      ]))
-                    }
-                  }
-                  else{
-                    var temp = [...shiftData];
-                    temp.unshift({longday:longday, night:night, late:late, early:early, year:`${selectedDate.date.year()}`,day:`${selectedDate.date.date()}`, month:selectedDate.date.month()+1, state:0});
-                    setSD(temp);
-                    setSDate({date:selectedDate.date.add(1, 'days'), ...selectedDate})
-                    setLD(0);setNT(0);setEA(0);setLate(0);
-                  }
-                }} >
-                  <Text style={{
-                    color:"white",
-                    fontWeight:"bold"
-                  }} >Next day</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={{
-                  width:'45%',
-                  height:"80%",
-                  justifyContent:"center",
-                  alignItems:"center",
-                  backgroundColor:base_color,
-                  borderRadius:100,
-                  elevation:5
-                }} onPress={()=>{
-                  handleSubmit()
-                }} >
-                  <Text style={{
-                    color:"white",
-                    fontWeight:"bold"
-                  }} >Submit</Text>
-                </TouchableOpacity>
-            </View>
-        </View>
-      </View>
-      </Modal>
-      
+        </Modal>
       <View style={{
         height:calHeight,
         width: calWidth,
@@ -408,16 +326,11 @@ function Calendar({navigation, route}) {
                       shadowOpacity: 0.5,
                       shadowRadius: 2,
                     }} onPress={()=>{
-                      if(d.flag > 0){
-                        dispatch({type:"SET_SHIFT_FOR_ASSIGN", payload:d.shiftData})
-                        dispatch({type:"HIDE_MAIN_HEADER", payload:false})
-                        navigation.navigate('Assign');
-                      }
-                      else{
                         var d_ = new Date(`${curDate.year()}/${curDate.month()+1}/${d.day}`);
-                        setSDate({date:moment(d_), flag:d.flag});
-                        setHO(true);
-                      }
+
+                        setSDate(moment(d_));
+                        setSelShift({...d.shiftData.shift, type:d.shiftData.type})
+                        setToday(true)
                       
                     }} >
                       {

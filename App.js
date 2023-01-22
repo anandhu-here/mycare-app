@@ -15,6 +15,8 @@ import Home from './src/components/Home';
 import Index from './src/components/Index';
 import store from './src/redux/store';
 import { LOGIN_SUCCESS } from './src/redux/types/auth';
+import { StatusBarHeight } from '@expo/status-bar-height';
+import Constants from 'expo-constants';
 
 const Stack = createStackNavigator();
 
@@ -22,14 +24,16 @@ const ReduxApp = () =>{
   const [ auth, setAuth ] = useState(false);
   const [ loading, setLoading ] = useState(true);
   const authContext = useSelector(state=>state.userLogin);
+  
+  const appState = useSelector(state=>state.appState);
   const dispatch = useDispatch();
-  console.log(ST.currentHeight);
   var page;
   var screen;
   useEffect(()=>{
     setLoading(true);
     
     getData().then((value)=>{
+      console.log(value, "ppo")
       dispatch({type:LOGIN_SUCCESS, payload:value});
       if(value){
         setAuth(true);
@@ -48,10 +52,8 @@ const ReduxApp = () =>{
   useEffect(()=>{
     setLoading(true)
     const {userInfo} = authContext;
-    console.log(userInfo, "userrrrr")
     if(userInfo){
       setAuth(true);
-      console.log(userInfo, "[[[[[")
       page=userInfo.role
     }
     else{
@@ -60,10 +62,8 @@ const ReduxApp = () =>{
     setLoading(false)
   }, [authContext]);
 
-  console.log(page, "page")
 
   if(page==="ADMIN"){
-    console.log(page, "pageyyyy")
     screen=(
       <Stack.Screen options={{
         header:(props)=>{
@@ -76,26 +76,23 @@ const ReduxApp = () =>{
   }
   return(
     <View style={{
-      ...StyleSheet.absoluteFill,
-      marginTop:ST.currentHeight
+      flex:1,
+      width:"100%",
+      marginTop:Constants.statusBarHeight
     }} >
       {
         loading?(
           <ActivityIndicator size={40}  />
         ):(
           <NavigationContainer  >
-          <Stack.Navigator >
+          <Stack.Navigator screenOptions={{
+            headerShown:false
+          }} >
             {
               auth?
               (
                 <>
-                  <Stack.Screen options={{
-                    header:(props)=>{
-                      return(
-                        <Header />
-                      )
-                    }
-                  }} component={Index} name="home" />
+                  <Stack.Screen  component={Index} name="home" />
                 <Stack.Screen
                   component={Docs}
                   name="docs"
